@@ -1,51 +1,72 @@
+// game.js
+
+import { animals } from './animals.js';
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-// Animal evolution chain
-const animals = [
-  { name: "Mouse", color: "gray", speed: 2.0, startRadius: 20, evolveScore: 0 },
-  { name: "Rabbit", color: "pink", speed: 2.2, startRadius: 25, evolveScore: 5 },
-  { name: "Pig", color: "brown", speed: 2.4, startRadius: 30, evolveScore: 15 },
-  { name: "Deer", color: "tan", speed: 2.6, startRadius: 35, evolveScore: 30 },
-  { name: "Lion", color: "goldenrod", speed: 2.8, startRadius: 40, evolveScore: 50 },
-];
 
 let player = {
   level: 0,
   x: canvas.width / 2,
   y: canvas.height / 2,
-  radius: animals[0].startRadius,
-  speed: animals[0].speed,
+  radius: 20,
+  speed: 2.0,
   score: 0
 };
 
-let foods = [];
+player.radius = 20;
+player.speed = 2.0;
 
-for (let i = 0; i < 20; i++) {
-  foods.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    radius: 5 + Math.random() * 5
-  });
-}
+let foods = Array.from({length: 20}, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  radius: 5 + Math.random() * 5
+}));
 
 let keys = {};
 window.addEventListener('keydown', (e) => { keys[e.key] = true; });
 window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
+// Upgrade menu
+const menu = document.createElement('div');
+menu.style.position = 'absolute';
+menu.style.top = '50%';
+menu.style.left = '50%';
+menu.style.transform = 'translate(-50%, -50%)';
+menu.style.background = 'white';
+menu.style.padding = '20px';
+menu.style.border = '2px solid black';
+menu.style.display = 'none';
+document.body.appendChild(menu);
+
+function openUpgradeMenu(options) {
+  menu.innerHTML = `<h3>Choose next animal:</h3>`;
+  options.forEach(opt => {
+    let btn = document.createElement('button');
+    btn.textContent = opt.name;
+    btn.style.margin = '5px';
+    btn.onclick = () => {
+      player.level = animals.findIndex(a => a.name === opt.name);
+      player.radius = 20 + player.level * 5;
+      player.speed = 2 + player.level * 0.1;
+      menu.style.display = 'none';
+    };
+    menu.appendChild(btn);
+  });
+  menu.style.display = 'block';
+}
+
 function checkEvolution() {
-  let nextLevel = player.level + 1;
-  if (nextLevel < animals.length && player.score >= animals[nextLevel].evolveScore) {
-    player.level = nextLevel;
-    player.speed = animals[nextLevel].speed;
-    if (player.radius < animals[nextLevel].startRadius) {
-      player.radius = animals[nextLevel].startRadius;
-    }
-    console.log(`Evolved to: ${animals[nextLevel].name}`);
+  let current = animals[player.level];
+  let nextOptions = animals.filter(a => a.evolveScore > current.evolveScore && a.evolveScore <= player.score);
+  if (nextOptions.length > 0 && menu.style.display === 'none') {
+    openUpgradeMenu(nextOptions.slice(0, 3)); // show up to 3 options
   }
 }
 
 function update() {
+  if (menu.style.display !== 'none') return; // pause game when choosing
+
   if (keys['ArrowUp']) player.y -= player.speed;
   if (keys['ArrowDown']) player.y += player.speed;
   if (keys['ArrowLeft']) player.x -= player.speed;
@@ -77,95 +98,10 @@ function update() {
   checkEvolution();
 }
 
-function drawPlayerShape() {
-  let animal = animals[player.level];
-  ctx.fillStyle = animal.color;
-  ctx.strokeStyle = "black";
-
-  switch (animal.name) {
-    case "Mouse":
-      // Body
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Ears
-      ctx.beginPath();
-      ctx.arc(player.x - player.radius * 0.6, player.y - player.radius * 0.8, player.radius * 0.3, 0, Math.PI * 2);
-      ctx.arc(player.x + player.radius * 0.6, player.y - player.radius * 0.8, player.radius * 0.3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      break;
-
-    case "Rabbit":
-      // Body
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Long ears
-      ctx.beginPath();
-      ctx.ellipse(player.x - player.radius * 0.4, player.y - player.radius * 1.3, player.radius * 0.2, player.radius * 0.6, 0, 0, Math.PI * 2);
-      ctx.ellipse(player.x + player.radius * 0.4, player.y - player.radius * 1.3, player.radius * 0.2, player.radius * 0.6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      break;
-
-    case "Pig":
-      // Body
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Snout
-      ctx.beginPath();
-      ctx.arc(player.x, player.y + player.radius * 0.5, player.radius * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = "#FFC0CB"; // Light pink snout
-      ctx.fill();
-      ctx.stroke();
-      break;
-
-    case "Deer":
-      // Body
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Antlers
-      ctx.beginPath();
-      ctx.moveTo(player.x - player.radius * 0.5, player.y - player.radius);
-      ctx.lineTo(player.x - player.radius * 0.8, player.y - player.radius * 1.5);
-      ctx.moveTo(player.x + player.radius * 0.5, player.y - player.radius);
-      ctx.lineTo(player.x + player.radius * 0.8, player.y - player.radius * 1.5);
-      ctx.stroke();
-      break;
-
-    case "Lion":
-      // Body
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // Mane outline
-      ctx.strokeStyle = "orange";
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius * 1.2, 0, Math.PI * 2);
-      ctx.stroke();
-      break;
-
-    default:
-      // Fallback
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-  }
-}
-
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Foods
+  // Food
   ctx.fillStyle = 'green';
   foods.forEach(f => {
     ctx.beginPath();
@@ -173,8 +109,12 @@ function draw() {
     ctx.fill();
   });
 
-  // Player shape
-  drawPlayerShape();
+  // Player
+  ctx.fillStyle = animals[player.level].color;
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 
   // Info
   ctx.fillStyle = 'black';
@@ -190,3 +130,4 @@ function loop() {
 }
 
 loop();
+

@@ -1,18 +1,13 @@
-// animals.js
+import { landAnimals } from './animals-part-1.js';
+import { oceanAnimals } from './animals-part-2.js';
+import { arcticAnimals } from './animals-part-3.js';
+import { desertAnimals } from './animals-part-4.js';
+import { mythicalAnimals } from './animals-part-5.js';
 
-const animals = [
-  // Level 0
-  { name: "Mouse", color: "gray", evolveScore: 0 },
-  { name: "Rabbit", color: "pink", evolveScore: 5 },
-  { name: "Pig", color: "brown", evolveScore: 15 },
-  { name: "Deer", color: "tan", evolveScore: 30 },
-  { name: "Fox", color: "orange", evolveScore: 50 },
-  { name: "Wolf", color: "lightgray", evolveScore: 70 },
-  { name: "Lion", color: "goldenrod", evolveScore: 100 },
-  { name: "Bear", color: "darkbrown", evolveScore: 130 },
-  { name: "Crocodile", color: "green", evolveScore: 170 },
-  { name: "Rhino", color: "gray", evolveScore: 220 },
-  { name: "Elephant", color: "lightgray", evolveScore: 280 },
-  { name: "Mammoth", color: "brown", evolveScore: 350 },
-  { name: "Dragon", color: "red", evolveScore: 450 },
+export const animals = [
+  ...landAnimals,
+  ...oceanAnimals,
+  ...arcticAnimals,
+  ...desertAnimals,
+  ...mythicalAnimals
 ];
